@@ -1,5 +1,7 @@
-from viz import db
-
+from viz import app, db
+from passlib.apps import custom_app_context as pwd_context
+from itsdangerous import (TimedJSONWebSignatureSerializer
+                          as Serializer, BadSignature, SignatureExpired)
 
 """
 There will be options on a business card view to "connect to company" and also
@@ -12,10 +14,33 @@ class UserDB(db.Model):
     """User object stores all necessary information for a site user.
     """
     __tablename__ = 'users'
-    user_id = db.Column(db.String(15), primary_key=True, nullable=False)
+    username = db.Column(db.String(15), primary_key=True, index=True, nullable=False)
+    img_id = db.Column(db.Integer, db.ForeignKey('images.img_id'))
     email = db.Column(db.String(50), nullable=False)
     name = db.Column(db.String(50))
-    phone_num = db.Column(db.Integer)
+    pass_hash = db.Column(db.String(128))
+
+    def hash_password(self, password):
+        self.pass_hash = pwd_context.encrypt(password)
+
+    def verify_password(self, password):
+        return pwd_context.verify(password, self.pass_hash)
+
+    def generate_auth_token(self, expiration=600):
+        s = Serializer(app.config['SECRET_KEY'], expires_in=expiration)
+        return s.dumps({'username': self.username})
+
+    @staticmethod
+    def verify_auth_token(token):
+        s = Serializer(app.config['SECRET_KEY'])
+        try:
+            data = s.loads(token)
+        except SignatureExpired:
+            return None # valid token, but expired
+        except BadSignature:
+            return None # invalid token
+        user = UserDB.query.get(data['username'])
+        return user
 
 
 class VizCardDB(db.Model):
@@ -33,10 +58,10 @@ class VizCardDB(db.Model):
     """
     __tablename__ = 'cards'
     card_id = db.Column(db.Integer, primary_key=True, nullable=False)
-    user_id = db.Column(db.String(15), db.ForeignKey('users.user_id'), nullable=False)
+    username = db.Column(db.String(15), db.ForeignKey('users.username'), nullable=False)
     address_id = db.Column(db.Integer, db.ForeignKey('addresses.address_id'))
     gallery_id = db.Column(db.Integer, db.ForeignKey('galleries.gallery_id'))
-    logo_id = db.Column(db.Integer, db.ForeignKey('images.image_id'))
+    logo_id = db.Column(db.Integer, db.ForeignKey('images.img_id'))
     position = db.Column(db.String(50), nullable=False)
     type = db.Column(db.Integer, nullable=False)
     phone_num = db.Column(db.String(30))
@@ -52,7 +77,7 @@ class UserDirectoryDB(db.Model):
     """
     __tablename__ = 'userdir'
     userdir_id = db.Column(db.Integer, primary_key=True, nullable=False)
-    user_id = db.Column(db.String(15), db.ForeignKey('users.user_id'), nullable=False)
+    username = db.Column(db.String(15), db.ForeignKey('users.username'), nullable=False)
     card_id = db.Column(db.Integer, db.ForeignKey('cards.card_id'), nullable=False)
     address_id = db.Column(db.Integer, db.ForeignKey('addresses.address_id'))
     notes = db.Column(db.String(200))
@@ -63,7 +88,7 @@ class CompanyDB(db.Model):
     """
     __tablename__ = 'companies'
     name = db.Column(db.String(50), primary_key=True, nullable=False)
-    logo_id = db.Column(db.Integer, db.ForeignKey('images.image_id'))
+    logo_id = db.Column(db.Integer, db.ForeignKey('images.img_id'))
     address_id = db.Column(db.Integer, db.ForeignKey('addresses.address_id'))
     gallery_id = db.Column(db.Integer, db.ForeignKey('galleries.gallery_id'))
     email = db.Column(db.String(50))
@@ -75,19 +100,22 @@ class GalleryDB(db.Model):
     """
     __tablename__ = 'galleries'
     gallery_id = db.Column(db.Integer, primary_key=True, nullable=False)
-    image_1 = db.Column(db.Integer, db.ForeignKey('images.image_id'), nullable=False)
-    image_2 = db.Column(db.Integer, db.ForeignKey('images.image_id'), nullable=False)
-    image_3 = db.Column(db.Integer, db.ForeignKey('images.image_id'), nullable=False)
-    image_4 = db.Column(db.Integer, db.ForeignKey('images.image_id'), nullable=False)
-    image_5 = db.Column(db.Integer, db.ForeignKey('images.image_id'), nullable=False)
+    image_1 = db.Column(db.Integer, db.ForeignKey('images.img_id'), nullable=False)
+    image_2 = db.Column(db.Integer, db.ForeignKey('images.img_id'), nullable=False)
+    image_3 = db.Column(db.Integer, db.ForeignKey('images.img_id'), nullable=False)
+    image_4 = db.Column(db.Integer, db.ForeignKey('images.img_id'), nullable=False)
+    image_5 = db.Column(db.Integer, db.ForeignKey('images.img_id'), nullable=False)
 
 
 class ImageDB(db.Model):
     """Image database
+    image_id    : integer   -> Unique identifier
+    img_name    : string    -> Append to webserver/pathname/img_name for image lookup
+    description : string    -> Basic description of image
     """
     __tablename__ = 'images'
-    image_id = db.Column(db.Integer, primary_key=True, nullable=False)
-    content = db.Column(db.LargeBinary, nullable=False)
+    img_id = db.Column(db.Integer, primary_key=True, nullable=False)
+    img_name = db.Column(db.String(50), nullable=False)
     description = db.Column(db.String(50))
 
 
