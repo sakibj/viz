@@ -1,4 +1,4 @@
-Icepiration Global Calendar tech asset repository. Flask App in development.
+Vizness card application repository. Flask App in development.
 
 To get set up on the project:
 
@@ -30,3 +30,5 @@ Quit out of mysql with "quit". Then run:
 To check the database subsequently, run "mysql -uice -pice"
 To change database structure, edit viz/models.py, then run migrate and upgrade again.
 If you happen to remove the migrations folder, then run init, migrate, then upgrade.
+
+api.py has all the cool stuff in it.
