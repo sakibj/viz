@@ -3,4 +3,6 @@
 *.pyc
 venv
 venv/*
+migrations
+migrations/*
 *.sh

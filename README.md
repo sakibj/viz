@@ -22,13 +22,11 @@ Run the following commands:
 - "create database viz;"
 - "create user 'viz'@'localhost' identified by 'viz';"
 - "grant all privileges on viz.* to 'viz'@'localhost';"
-- "flush privileges;"
 Quit out of mysql with "quit". Then run:
 - "./migrate.py db migrate"
 - "./migrate.py db upgrade"
 
-To check the database subsequently, run "mysql -uice -pice"
+To check the database subsequently, run "mysql -uviz -pviz"
 To change database structure, edit viz/models.py, then run migrate and upgrade again.
 If you happen to remove the migrations folder, then run init, migrate, then upgrade.
-
-api.py has all the cool stuff in it.
+If all else fails, rm -rf migrations, then run init/migrate/upgrade

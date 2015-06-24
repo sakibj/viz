@@ -1,4 +1,4 @@
-from viz import app, db
+from __init__ import app, db
 from passlib.apps import custom_app_context as pwd_context
 from itsdangerous import (TimedJSONWebSignatureSerializer
                           as Serializer, BadSignature, SignatureExpired)
@@ -61,7 +61,6 @@ class VizCardDB(db.Model):
     username = db.Column(db.String(15), db.ForeignKey('users.username'), nullable=False)
     address_id = db.Column(db.Integer, db.ForeignKey('addresses.address_id'))
     gallery_id = db.Column(db.Integer, db.ForeignKey('galleries.gallery_id'))
-    company_name = db.Column(db.String(50), db.ForeignKey('companies.name'))
     logo_id = db.Column(db.Integer, db.ForeignKey('images.img_id'))
     position = db.Column(db.String(50), nullable=False)
     type = db.Column(db.Integer, nullable=False)
@@ -101,7 +100,7 @@ class GalleryDB(db.Model):
     """
     __tablename__ = 'galleries'
     gallery_id = db.Column(db.Integer, primary_key=True, nullable=False)
-    image_1 = db.Column(db.Integer, db.ForeignKey('images.img_id'))
+    image_1 = db.Column(db.Integer, db.ForeignKey('images.img_id'), nullable=False)
     image_2 = db.Column(db.Integer, db.ForeignKey('images.img_id'))
     image_3 = db.Column(db.Integer, db.ForeignKey('images.img_id'))
     image_4 = db.Column(db.Integer, db.ForeignKey('images.img_id'))

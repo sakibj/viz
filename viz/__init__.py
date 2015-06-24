@@ -4,9 +4,11 @@ from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.script import Manager
 from flask.ext.migrate import Migrate, MigrateCommand
 from flask.ext.httpauth import HTTPBasicAuth
+from viz.api import api
 
 app = Flask(__name__)
 app.config.from_pyfile('../config.py')
+app.register_blueprint(api, subdomain='api')
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
@@ -16,4 +18,5 @@ manager.add_command('db', MigrateCommand)
 
 auth = HTTPBasicAuth()
 
-from viz import models, api
+from .models import *
+from .api import __init__

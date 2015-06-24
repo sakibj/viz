@@ -1,24 +1,23 @@
 from flask import request, jsonify, render_template, url_for, abort, g
-from flask.ext.wtf import Form
-from wtforms.validators import Email, DataRequired
-from wtforms import (TextField, IntegerField, SubmitField)
-from models import UserDB, VizCardDB, ImageDB, UserDirectoryDB,\
+from ..models import UserDB, VizCardDB, ImageDB, UserDirectoryDB,\
                    CompanyDB, GalleryDB, ImageDB, AddressDB
 from util import get_user_json, get_card_json, get_company_json,\
                  get_gallery_json, get_address_json
-from viz import app, auth
+from ..__init__ import app, auth
 import logging
 
 
 # Testing a resource with login_required
-@app.route('/api/resource')
+@app.route('/resource')
+@app.route('/resource/')
 @auth.login_required # Leads to verify_password decorator
 def get_resource():
     return jsonify({'data': "Hello, %s!" % g.user.username})
 
 
 # Route to get an authentication token
-@app.route('/api/token')
+@app.route('/token')
+@app.route('/token/')
 @auth.login_required
 def get_auth_token():
     token = g.user.generate_auth_token()
@@ -27,8 +26,8 @@ def get_auth_token():
 
 # Get: return users with limit or offset fields.
 # Post: user registration
-@app.route('/api/users', methods=['POST','GET'])
-@app.route('/api/users/', methods=['POST','GET'])
+@app.route('/users', methods=['POST','GET'])
+@app.route('/users/', methods=['POST','GET'])
 def users():
     if request.method == 'GET':
         lim = request.args.get('limit', 100)
@@ -55,16 +54,17 @@ def users():
 
 
 # Get a single user by username
-@app.route('/api/users/<username>', methods=['GET'])
-@app.route('/api/users/<username>/', methods=['GET'])
+@app.route('/users/<username>', methods=['GET'])
+@app.route('/users/<username>/', methods=['GET'])
 def user(username):
     if request.method == 'GET':
+        print username
         user = UserDB.query.filter_by(username=username).first()
         return jsonify(user=get_user_json(user))
 
 
-@app.route('/api/cards', methods=['POST','GET'])
-@app.route('/api/cards/', methods=['POST','GET'])
+@app.route('/cards', methods=['POST','GET'])
+@app.route('/cards/', methods=['POST','GET'])
 def cards():
     if request.method == 'GET':
         lim = request.args.get('limit', 100)
@@ -161,8 +161,8 @@ def cards():
 
 
 # By individual username
-@app.route('/api/cards/<username>', methods=['GET'])
-@app.route('/api/cards/<username>/', methods=['GET'])
+@app.route('/cards/<username>', methods=['GET'])
+@app.route('/cards/<username>/', methods=['GET'])
 def card(username):
     if request.method == 'GET':
         cards = VizCardDB.query.filter_by(username=username).all()
@@ -171,8 +171,8 @@ def card(username):
 
 
 # Get and post to all companies
-@app.route('/api/companies', methods=['POST','GET'])
-@app.route('/api/companies/', methods=['POST','GET'])
+@app.route('/companies', methods=['POST','GET'])
+@app.route('/companies/', methods=['POST','GET'])
 def companies():
     if request.method == 'GET':
         companies = CompanyDB.query.all()
@@ -236,8 +236,8 @@ def companies():
 
 
 # Search for info for one company
-@app.route('/api/companies/<company_name>', methods=['GET'])
-@app.route('/api/companies/<company_name>/', methods=['GET'])
+@app.route('/companies/<company_name>', methods=['GET'])
+@app.route('/companies/<company_name>/', methods=['GET'])
 def company(company_name):
     if request.method == 'GET':
         company = CompanyDB.query.filter_by(name=company_name).first()
@@ -245,8 +245,8 @@ def company(company_name):
 
 
 # Search for cards related to one company
-@app.route('/api/companies/<company_name>/cards', methods=['GET'])
-@app.route('/api/companies/<company_name>/cards/', methods=['GET'])
+@app.route('/companies/<company_name>/cards', methods=['GET'])
+@app.route('/companies/<company_name>/cards/', methods=['GET'])
 def company_users(company_name):
     if request.method == 'GET':
         if CompanyDB.query.filter_by(name=company_name).first() is None:

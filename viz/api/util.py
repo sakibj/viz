@@ -1,5 +1,5 @@
 import os
-from models import UserDB, VizCardDB, ImageDB, UserDirectoryDB,\
+from ..models import UserDB, VizCardDB, ImageDB, UserDirectoryDB,\
                    CompanyDB, GalleryDB, ImageDB, AddressDB
 
 # Return user's info including the path on the webserver to the user's profile picture
